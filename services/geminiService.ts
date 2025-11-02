@@ -16,25 +16,35 @@ async function callApi<T>(action: string, payload: unknown): Promise<T> {
     if (!response.ok) {
       const errorText = await response.text();
       console.error(`API call failed for action ${action}:`, errorText);
-      throw new Error(`Server error: ${response.statusText}`);
+      let errorMessage = `Server error: ${response.statusText}`;
+      try {
+        // Try to parse a structured error from the backend
+        const errorPayload = JSON.parse(errorText);
+        if (errorPayload.error) {
+          errorMessage = errorPayload.error;
+        }
+      } catch (e) {
+        // If the response is not JSON, use the raw text if it's not too long
+        if (errorText.length > 0 && errorText.length < 300) {
+           errorMessage = errorText;
+        }
+      }
+      throw new Error(errorMessage);
     }
     
     return await response.json();
   } catch (error) {
     console.error(`Error calling API for action ${action}:`, error);
-    // Re-throw or return a specific error structure
+    // Re-throw to be caught by the UI component
     throw error;
   }
 }
 
 export const geminiService = {
   generateChapterContent: async (title: string): Promise<string> => {
-    try {
-      const result = await callApi<{ text: string }>('generateChapterContent', { title });
-      return result.text;
-    } catch (error) {
-       return 'Sorry, there was an error generating the content for this chapter. Please try again later.';
-    }
+    // Let errors propagate to be handled by the component
+    const result = await callApi<{ text: string }>('generateChapterContent', { title });
+    return result.text;
   },
 
   startChat: (isThinkingMode: boolean) => {

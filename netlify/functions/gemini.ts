@@ -21,12 +21,30 @@ const handler: Handler = async (event: HandlerEvent) => {
         switch (action) {
             case 'generateChapterContent': {
                 const { title } = payload;
-                const prompt = `Explain the topic "${title}" for a beginner in the tech field. Structure the explanation with clear headings, bullet points for key concepts, and a simple example if applicable. The tone should be encouraging and easy to understand.`;
+                const prompt = `Help me learn about "${title}".
+
+Explain this topic for a beginner in the tech field. Your explanation should be clear, concise, and encouraging.
+
+Please structure your response in Markdown with the following elements:
+- A main heading for the topic title.
+- Subheadings for key sections.
+- Bullet points for important concepts or lists.
+- Use bold formatting for key terms.
+- Include a simple, easy-to-understand example if applicable.`;
                 const response = await ai.models.generateContent({
                     model: 'gemini-2.5-flash',
                     contents: prompt,
                 });
-                return { statusCode: 200, body: JSON.stringify({ text: response.text }) };
+
+                const text = response.text;
+                if (!text || text.trim() === '') {
+                    const candidate = response.candidates?.[0];
+                    const finishReason = candidate?.finishReason ?? 'UNKNOWN';
+                    const safetyRatings = JSON.stringify(candidate?.safetyRatings ?? []);
+                    throw new Error(`Content generation returned empty text. Finish reason: ${finishReason}. Safety ratings: ${safetyRatings}`);
+                }
+                
+                return { statusCode: 200, body: JSON.stringify({ text }) };
             }
             
             case 'sendMessage': {
@@ -48,7 +66,7 @@ const handler: Handler = async (event: HandlerEvent) => {
                     },
                 });
 
-                const response = await chat.sendMessage({ message });
+                const response = await chat.sendMessage(message);
                 return { statusCode: 200, body: JSON.stringify({ text: response.text }) };
             }
 

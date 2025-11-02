@@ -37,8 +37,11 @@ async function callApi<T>(action: string, payload: unknown): Promise<T> {
     return await response.json();
   } catch (error) {
     console.error(`Error calling API for action ${action}:`, error);
-    // Re-throw to be caught by the UI component
-    throw error;
+    // Ensure that what's thrown is always an Error object with a message.
+    if (error instanceof Error) {
+      throw error;
+    }
+    throw new Error(String(error) || 'An unknown client-side error occurred.');
   }
 }
 

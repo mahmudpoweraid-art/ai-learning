@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import type { ChapterPath, Topic } from '../types';
 import { geminiService } from '../services/geminiService';
@@ -19,6 +18,7 @@ const ChapterView: React.FC<ChapterViewProps> = ({ path, courseStructure, onNavi
   const [rawContent, setRawContent] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isTranslating, setIsTranslating] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
 
   const { language, t } = useTranslation();
 
@@ -32,21 +32,29 @@ const ChapterView: React.FC<ChapterViewProps> = ({ path, courseStructure, onNavi
   useEffect(() => {
     const fetchContent = async () => {
       setIsLoading(true);
-      const generatedContent = await geminiService.generateChapterContent(chapter.title);
-      setRawContent(generatedContent);
-      setContent(generatedContent);
-      setIsLoading(false);
+      setError(null);
+      try {
+        const generatedContent = await geminiService.generateChapterContent(chapter.title);
+        setRawContent(generatedContent);
+        setContent(generatedContent);
+      } catch (e: any) {
+        setError(e.message || t('chapter_generation_error'));
+      } finally {
+        setIsLoading(false);
+      }
     };
     fetchContent();
 
     return () => {
-      handleMarkComplete();
+      if (!error) { // Only mark as complete if there was no error
+        handleMarkComplete();
+      }
     };
-  }, [chapter.title, handleMarkComplete]);
+  }, [chapter.title, error, handleMarkComplete, t]);
   
   useEffect(() => {
     const translateContent = async () => {
-        if (rawContent && language === 'bn') {
+        if (rawContent && language === 'bn' && !error) { // Don't translate error messages
             setIsTranslating(true);
             const translated = await geminiService.translateContent(rawContent, 'bn');
             setContent(translated);
@@ -56,7 +64,7 @@ const ChapterView: React.FC<ChapterViewProps> = ({ path, courseStructure, onNavi
         }
     };
     translateContent();
-  }, [language, rawContent]);
+  }, [language, rawContent, error]);
 
 
   const isFirstChapter = topicIdx === 0 && subtopicIdx === 0 && chapterIdx === 0;
@@ -65,17 +73,32 @@ const ChapterView: React.FC<ChapterViewProps> = ({ path, courseStructure, onNavi
   const isLastChapter = topicIdx === courseStructure.length - 1 &&
                       subtopicIdx === lastTopic.subtopics.length - 1 &&
                       chapterIdx === lastSubtopic.chapters.length - 1;
+                      
+  const renderMainContent = () => {
+    if (isLoading || isTranslating) {
+      return <div className="flex justify-center p-8"><LoadingSpinner /></div>;
+    }
+    if (error) {
+      return (
+        <div className="text-center p-4 my-4 text-red-400 bg-red-900/20 border border-red-500/50 rounded-lg">
+            <p className="font-semibold">An Error Occurred</p>
+            <p>{error}</p>
+        </div>
+      );
+    }
+    return <div className="whitespace-pre-wrap">{content}</div>;
+  };
 
   return (
     <div className="bg-surface p-6 sm:p-8 rounded-lg shadow-lg animate-fade-in">
       <h1 className="text-3xl sm:text-4xl font-bold text-secondary mb-2">{chapter.title}</h1>
       <p className="text-text-secondary mb-6">{courseStructure[topicIdx].title} / {courseStructure[topicIdx].subtopics[subtopicIdx].title}</p>
       
-      <div className="prose prose-invert max-w-none text-text-secondary leading-relaxed whitespace-pre-wrap">
-        {isLoading || isTranslating ? <LoadingSpinner /> : content}
+      <div className="prose prose-invert max-w-none text-text-secondary leading-relaxed">
+        {renderMainContent()}
       </div>
       
-      {!isLoading && content && (
+      {!isLoading && content && !error && (
         <div className="text-center mt-8">
           <button
             onClick={() => onStartQuiz(path, rawContent)} // Always quiz on raw English content

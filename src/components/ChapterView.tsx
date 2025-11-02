@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import type { ChapterPath, Topic } from '../types';
 import { geminiService } from '../services/geminiService';
 import LoadingSpinner from './LoadingSpinner';
@@ -20,6 +20,7 @@ const ChapterView: React.FC<ChapterViewProps> = ({ path, courseStructure, onNavi
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isTranslating, setIsTranslating] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const hasLoadedSuccessfully = useRef(false);
 
   const [isVisualizing, setIsVisualizing] = useState(false);
   const [visualizerError, setVisualizerError] = useState<string | null>(null);
@@ -35,6 +36,7 @@ const ChapterView: React.FC<ChapterViewProps> = ({ path, courseStructure, onNavi
   }, [markChapterAsComplete, path]);
 
   useEffect(() => {
+    hasLoadedSuccessfully.current = false; // Reset on new chapter fetch
     const fetchContent = async () => {
       setIsLoading(true);
       setError(null);
@@ -42,6 +44,7 @@ const ChapterView: React.FC<ChapterViewProps> = ({ path, courseStructure, onNavi
         const generatedContent = await geminiService.generateChapterContent(chapter.title);
         setRawContent(generatedContent);
         setContent(generatedContent);
+        hasLoadedSuccessfully.current = true; // Mark as successful
       } catch (e: any) {
         setError(e.message || t('chapter_generation_error'));
       } finally {
@@ -51,7 +54,10 @@ const ChapterView: React.FC<ChapterViewProps> = ({ path, courseStructure, onNavi
     fetchContent();
 
     return () => {
-      handleMarkComplete();
+      // Mark chapter as complete on unmount only if it was loaded successfully
+      if (hasLoadedSuccessfully.current) {
+        handleMarkComplete();
+      }
     };
   }, [chapter.title, handleMarkComplete, t]);
   
