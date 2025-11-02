@@ -93,7 +93,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSelectChapter, courseStructure 
                 className="w-full text-left px-4 py-3 hover:bg-gray-700/50 transition-colors"
               >
                 <p className="font-semibold text-text-primary">{chapterTitle}</p>
-                <p className="text-sm text-text-secondary">{topicTitle} > {subtopicTitle}</p>
+                <p className="text-sm text-text-secondary">{topicTitle} {'>'} {subtopicTitle}</p>
               </button>
             </li>
           ))}
