@@ -1,0 +1,5 @@
+{
+  "name": "AI Learning Hub",
+  "description": "An interactive web application to learn about various AI and tech topics with the help of Gemini. Features include AI-generated lessons, quizzes, and a chatbot for queries.",
+  "requestFramePermissions": []
+}
