@@ -42,8 +42,8 @@ const ChapterView: React.FC<ChapterViewProps> = ({ path, courseStructure, onNavi
         const generatedContent = await geminiService.generateChapterContent(chapter.title);
         setRawContent(generatedContent);
         setContent(generatedContent);
-      } catch (e) {
-        setError(t('chapter_generation_error'));
+      } catch (e: any) {
+        setError(e.message || t('chapter_generation_error'));
       } finally {
         setIsLoading(false);
       }
@@ -111,7 +111,8 @@ const ChapterView: React.FC<ChapterViewProps> = ({ path, courseStructure, onNavi
     }
     if (error) {
         return (
-            <div className="text-center p-8 text-red-400">
+            <div className="text-center p-8 text-red-400 bg-red-500/10 rounded-lg">
+                <p className="font-semibold">Error</p>
                 <p>{error}</p>
             </div>
         );

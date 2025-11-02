@@ -85,8 +85,8 @@ const TopicsListView: React.FC<TopicsListViewProps> = ({ topics, progress, onSel
         try {
             await onAddNewTopic(newTopicTitle);
             setNewTopicTitle('');
-        } catch (err) {
-            setError(t('add_topic_error'));
+        } catch (err: any) {
+            setError(err.message || t('add_topic_error'));
             console.error(err);
         } finally {
             setIsAdding(false);
@@ -115,7 +115,7 @@ const TopicsListView: React.FC<TopicsListViewProps> = ({ topics, progress, onSel
                     >
                         {isAdding ? <LoadingSpinner /> : t('generate_and_add_topic')}
                     </button>
-                    {error && <p className="text-red-400 text-sm">{error}</p>}
+                    {error && <p className="text-red-400 text-sm mt-2">{error}</p>}
                 </form>
             </div>
 

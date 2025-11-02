@@ -18,25 +18,6 @@ const handler: Handler = async (event: HandlerEvent) => {
         const { action, payload } = JSON.parse(event.body);
         const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
-        const relaxedSafetySettings = [
-            {
-                category: 'HARM_CATEGORY_DANGEROUS_CONTENT',
-                threshold: 'BLOCK_NONE',
-            },
-            {
-                category: 'HARM_CATEGORY_HARASSMENT',
-                threshold: 'BLOCK_NONE',
-            },
-            {
-                category: 'HARM_CATEGORY_HATE_SPEECH',
-                threshold: 'BLOCK_NONE',
-            },
-            {
-                category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT',
-                threshold: 'BLOCK_NONE',
-            },
-        ];
-
         switch (action) {
             case 'generateChapterContent': {
                 const { title } = payload;
@@ -44,7 +25,6 @@ const handler: Handler = async (event: HandlerEvent) => {
                 const response = await ai.models.generateContent({
                     model: 'gemini-2.5-flash',
                     contents: prompt,
-                    safetySettings: relaxedSafetySettings,
                 });
                 return { statusCode: 200, body: JSON.stringify({ text: response.text }) };
             }
@@ -97,7 +77,6 @@ const handler: Handler = async (event: HandlerEvent) => {
                             },
                         }
                     },
-                    safetySettings: relaxedSafetySettings,
                 });
                 return { statusCode: 200, body: response.text };
             }
@@ -129,7 +108,6 @@ const handler: Handler = async (event: HandlerEvent) => {
                             },
                         }
                     },
-                    safetySettings: relaxedSafetySettings,
                 });
                 return { statusCode: 200, body: response.text };
             }
@@ -171,7 +149,6 @@ const handler: Handler = async (event: HandlerEvent) => {
                     config: {
                         responseModalities: [Modality.IMAGE],
                     },
-                    safetySettings: relaxedSafetySettings,
                 });
 
                 const imagePart = response.candidates?.[0]?.content?.parts?.find(part => part.inlineData);

@@ -42,9 +42,9 @@ const Chatbot: React.FC = () => {
         const modelMessage: ChatMessage = { role: 'model', text: response.text };
         setMessages(prev => [...prev, modelMessage]);
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Chat error:', error);
-      const errorMessage: ChatMessage = { role: 'model', text: t('chat_error') };
+      const errorMessage: ChatMessage = { role: 'model', text: error.message || t('chat_error') };
       setMessages(prev => [...prev, errorMessage]);
     } finally {
       setIsLoading(false);
