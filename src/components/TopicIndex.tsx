@@ -1,14 +1,15 @@
+
 import React from 'react';
-import type { ChapterPath, Progress, Topic, Subtopic } from '../types';
+import type { ChapterPath, Progress, Subject, Subtopic } from '../types';
 import { useTranslation } from '../i18n';
 
-interface TopicIndexProps {
-  topic: Topic;
-  topicIdx: number;
-  courseStructure: Topic[]; // needed for progress calculation context
+interface SubjectIndexProps {
+  subject: Subject;
+  subjectIdx: number;
+  courseStructure: Subject[]; // needed for progress calculation context
   onSelectChapter: (path: ChapterPath) => void;
   progress: Progress;
-  onBackToTopics: () => void;
+  onBackToSubjects: () => void;
 }
 
 const CheckmarkIcon = () => (
@@ -18,18 +19,18 @@ const CheckmarkIcon = () => (
 );
 
 
-const TopicIndex: React.FC<TopicIndexProps> = ({ topic, topicIdx, courseStructure, onSelectChapter, progress, onBackToTopics }) => {
+const SubjectIndex: React.FC<SubjectIndexProps> = ({ subject, subjectIdx, courseStructure, onSelectChapter, progress, onBackToSubjects }) => {
   const { t } = useTranslation();
 
-  const getChapterKey = (path: ChapterPath) => `${path.topicIdx}-${path.subtopicIdx}-${path.chapterIdx}`;
+  const getChapterKey = (path: ChapterPath) => `${path.subjectIdx}-${path.subtopicIdx}-${path.chapterIdx}`;
   const isChapterComplete = (path: ChapterPath) => !!progress[getChapterKey(path)];
   
   const isSubtopicComplete = (subtopic: Subtopic, subtopicIdx: number) => {
-      return subtopic.chapters.every((_, chapterIdx) => isChapterComplete({ topicIdx, subtopicIdx, chapterIdx }));
+      return subtopic.chapters.every((_, chapterIdx) => isChapterComplete({ subjectIdx, subtopicIdx, chapterIdx }));
   };
 
-  const isTopicComplete = () => {
-      return topic.subtopics.every((subtopic, subtopicIdx) => isSubtopicComplete(subtopic, subtopicIdx));
+  const isSubjectComplete = () => {
+      return subject.subtopics.every((subtopic, subtopicIdx) => isSubtopicComplete(subtopic, subtopicIdx));
   };
 
 
@@ -38,18 +39,18 @@ const TopicIndex: React.FC<TopicIndexProps> = ({ topic, topicIdx, courseStructur
         <div className="bg-surface p-6 rounded-lg shadow-lg">
           <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
-                <h2 className="text-3xl font-bold text-secondary">{topic.title}</h2>
-                {isTopicComplete() && <CheckmarkIcon />}
+                <h2 className="text-3xl font-bold text-secondary">{subject.title}</h2>
+                {isSubjectComplete() && <CheckmarkIcon />}
               </div>
               <button
-                onClick={onBackToTopics}
+                onClick={onBackToSubjects}
                 className="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded transition-colors duration-200"
               >
-                &larr; {t('all_topics')}
+                &larr; {t('all_subjects')}
               </button>
           </div>
           <div className="space-y-4">
-            {topic.subtopics.map((subtopic, subtopicIdx) => (
+            {subject.subtopics.map((subtopic, subtopicIdx) => (
               <div key={subtopic.title}>
                  <div className="flex items-center gap-2 mb-3">
                     <h3 className="text-xl font-semibold text-text-primary">{subtopic.title}</h3>
@@ -57,7 +58,7 @@ const TopicIndex: React.FC<TopicIndexProps> = ({ topic, topicIdx, courseStructur
                  </div>
                 <ul className="space-y-2">
                   {subtopic.chapters.map((chapter, chapterIdx) => {
-                    const path = { topicIdx, subtopicIdx, chapterIdx };
+                    const path = { subjectIdx, subtopicIdx, chapterIdx };
                     return (
                         <li key={chapter.title} className="flex items-center gap-2">
                           <button
@@ -79,4 +80,4 @@ const TopicIndex: React.FC<TopicIndexProps> = ({ topic, topicIdx, courseStructur
   );
 };
 
-export default TopicIndex;
+export default SubjectIndex;

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { geminiService } from '../services/geminiService';
 import type { GroundedSearchResponse } from '../types';
@@ -41,7 +42,7 @@ const ResearchView: React.FC<ResearchViewProps> = ({ onBack }) => {
           onClick={onBack}
           className="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded transition-colors duration-200"
         >
-          &larr; {t('all_topics')}
+          &larr; {t('all_subjects')}
         </button>
       </div>
       <p className="text-text-secondary mb-6">{t('research_assistant_desc')}</p>

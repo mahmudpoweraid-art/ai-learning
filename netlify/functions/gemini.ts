@@ -1,3 +1,4 @@
+
 import { GoogleGenAI, Type, Modality } from "@google/genai";
 import type { Handler, HandlerEvent } from "@netlify/functions";
 
@@ -48,9 +49,7 @@ Please structure your response in Markdown with the following elements:
             }
             
             case 'sendMessage': {
-                const { history, message, isThinkingMode, language } = payload;
-                const modelName = isThinkingMode ? 'gemini-2.5-pro' : 'gemini-2.5-flash';
-                const config = isThinkingMode ? { thinkingConfig: { thinkingBudget: 32768 } } : {};
+                const { history, message, language } = payload;
                 
                 let systemInstruction = 'You are a helpful AI assistant specialized in technology and AI topics. Answer user questions clearly and concisely.';
                 if (language === 'bn') {
@@ -58,10 +57,9 @@ Please structure your response in Markdown with the following elements:
                 }
 
                 const chat = ai.chats.create({
-                    model: modelName,
+                    model: 'gemini-2.5-flash',
                     history: history,
                     config: {
-                      ...config,
                       systemInstruction,
                     },
                 });
@@ -99,9 +97,9 @@ Please structure your response in Markdown with the following elements:
                 return { statusCode: 200, body: response.text };
             }
 
-            case 'generateTopicStructure': {
-                const { topicTitle } = payload;
-                const prompt = `Generate a concise course structure for the topic "${topicTitle}". The structure should contain 2 to 4 relevant subtopics, and each subtopic should have 3 to 5 chapter titles. The target audience is beginners.`;
+            case 'generateSubjectStructure': {
+                const { subjectTitle } = payload;
+                const prompt = `Generate a concise course structure for the subject "${subjectTitle}". The structure should contain 2 to 4 relevant subtopics, and each subtopic should have 3 to 5 chapter titles. The target audience is beginners.`;
                 const response = await ai.models.generateContent({
                     model: 'gemini-2.5-flash',
                     contents: prompt,
@@ -176,26 +174,21 @@ Please structure your response in Markdown with the following elements:
                     throw new Error("Image data was not found in the response.");
                 }
             }
-
+            
+            // FIX: Add cases for video generation
             case 'generateVideo': {
                 const { prompt, image, config } = payload;
-                const generateVideosPayload: {
-                    model: string;
-                    prompt: string;
-                    config: any;
-                    image?: { imageBytes: string; mimeType: string; };
-                } = {
+                const imagePayload = image ? {
+                    imageBytes: image.data,
+                    mimeType: image.mimeType,
+                } : undefined;
+
+                const operation = await ai.models.generateVideos({
                     model: 'veo-3.1-fast-generate-preview',
                     prompt,
+                    image: imagePayload,
                     config,
-                };
-                if (image) {
-                    generateVideosPayload.image = {
-                        imageBytes: image.data,
-                        mimeType: image.mimeType,
-                    };
-                }
-                const operation = await ai.models.generateVideos(generateVideosPayload);
+                });
                 return { statusCode: 200, body: JSON.stringify(operation) };
             }
 

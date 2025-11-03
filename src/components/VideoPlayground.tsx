@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { geminiService } from '../services/geminiService';
 import type { VideoOperation } from '../types';
@@ -89,7 +90,13 @@ const VideoPlayground: React.FC<VideoPlaygroundProps> = ({ onApiKeyError, onBack
 
             const downloadLink = operation.response?.generatedVideos?.[0]?.video?.uri;
             if (downloadLink) {
-                setVideoUrl(downloadLink);
+                // The download link needs the API key appended to be fetched
+                const response = await fetch(`${downloadLink}&key=${process.env.API_KEY}`);
+                if(!response.ok) throw new Error(`Failed to fetch video: ${response.statusText}`);
+                const videoBlob = await response.blob();
+                const objectURL = URL.createObjectURL(videoBlob);
+                setVideoUrl(objectURL);
+
             } else {
                 throw new Error("Video generation finished but no URL was returned.");
             }
@@ -123,7 +130,7 @@ const VideoPlayground: React.FC<VideoPlaygroundProps> = ({ onApiKeyError, onBack
                         id="prompt"
                         value={prompt}
                         onChange={(e) => setPrompt(e.target.value)}
-                        placeholder={t('prompt_placeholder')}
+                        placeholder={t('video_prompt_placeholder')}
                         className="w-full bg-background p-3 rounded-lg border border-gray-600 focus:outline-none focus:ring-2 focus:ring-primary"
                         rows={3}
                         disabled={isLoading}

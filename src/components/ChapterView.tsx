@@ -1,5 +1,6 @@
+
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import type { ChapterPath, Topic } from '../types';
+import type { ChapterPath, Subject } from '../types';
 import { geminiService } from '../services/geminiService';
 import LoadingSpinner from './LoadingSpinner';
 import VisualizerModal from './VisualizerModal';
@@ -7,14 +8,14 @@ import { useTranslation } from '../i18n';
 
 interface ChapterViewProps {
   path: ChapterPath;
-  courseStructure: Topic[];
+  courseStructure: Subject[];
   onNavigate: (direction: 'next' | 'prev') => void;
-  onBackToTopicDetail: () => void;
+  onBackToSubjectDetail: () => void;
   onStartQuiz: (path: ChapterPath, content: string) => void;
   markChapterAsComplete: (path: ChapterPath) => void;
 }
 
-const ChapterView: React.FC<ChapterViewProps> = ({ path, courseStructure, onNavigate, onBackToTopicDetail, onStartQuiz, markChapterAsComplete }) => {
+const ChapterView: React.FC<ChapterViewProps> = ({ path, courseStructure, onNavigate, onBackToSubjectDetail, onStartQuiz, markChapterAsComplete }) => {
   const [content, setContent] = useState<string>('');
   const [rawContent, setRawContent] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -28,8 +29,8 @@ const ChapterView: React.FC<ChapterViewProps> = ({ path, courseStructure, onNavi
 
   const { language, t } = useTranslation();
 
-  const { topicIdx, subtopicIdx, chapterIdx } = path;
-  const chapter = courseStructure[topicIdx].subtopics[subtopicIdx].chapters[chapterIdx];
+  const { subjectIdx, subtopicIdx, chapterIdx } = path;
+  const chapter = courseStructure[subjectIdx].subtopics[subtopicIdx].chapters[chapterIdx];
 
   const handleMarkComplete = useCallback(() => {
     markChapterAsComplete(path);
@@ -93,11 +94,11 @@ const ChapterView: React.FC<ChapterViewProps> = ({ path, courseStructure, onNavi
   };
 
 
-  const isFirstChapter = topicIdx === 0 && subtopicIdx === 0 && chapterIdx === 0;
-  const lastTopic = courseStructure[courseStructure.length - 1];
-  const lastSubtopic = lastTopic.subtopics[lastTopic.subtopics.length - 1];
-  const isLastChapter = topicIdx === courseStructure.length - 1 &&
-                      subtopicIdx === lastTopic.subtopics.length - 1 &&
+  const isFirstChapter = subjectIdx === 0 && subtopicIdx === 0 && chapterIdx === 0;
+  const lastSubject = courseStructure[courseStructure.length - 1];
+  const lastSubtopic = lastSubject.subtopics[lastSubject.subtopics.length - 1];
+  const isLastChapter = subjectIdx === courseStructure.length - 1 &&
+                      subtopicIdx === lastSubject.subtopics.length - 1 &&
                       chapterIdx === lastSubtopic.chapters.length - 1;
   
   const isActionInProgress = isLoading || isTranslating || isVisualizing;
@@ -138,7 +139,7 @@ const ChapterView: React.FC<ChapterViewProps> = ({ path, courseStructure, onNavi
       />
       <div className="bg-surface p-6 sm:p-8 rounded-lg shadow-lg animate-fade-in">
         <h1 className="text-3xl sm:text-4xl font-bold text-secondary mb-2">{chapter.title}</h1>
-        <p className="text-text-secondary mb-6">{courseStructure[topicIdx].title} / {courseStructure[topicIdx].subtopics[subtopicIdx].title}</p>
+        <p className="text-text-secondary mb-6">{courseStructure[subjectIdx].title} / {courseStructure[subjectIdx].subtopics[subtopicIdx].title}</p>
         
         {renderContent()}
         
@@ -167,7 +168,7 @@ const ChapterView: React.FC<ChapterViewProps> = ({ path, courseStructure, onNavi
 
         <div className="mt-8 pt-6 border-t border-gray-700 flex justify-between items-center">
           <button
-            onClick={onBackToTopicDetail}
+            onClick={onBackToSubjectDetail}
             disabled={isActionInProgress}
             className="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded transition-all duration-200 transform active:scale-95 disabled:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-60"
           >

@@ -1,15 +1,16 @@
+
 import React, { useState, useEffect } from 'react';
-import type { Topic, Progress, ChapterPath } from '../types';
+import type { Subject, Progress, ChapterPath } from '../types';
 import LoadingSpinner from './LoadingSpinner';
 import { useTranslation } from '../i18n';
 
-interface TopicsListViewProps {
-    topics: Topic[];
+interface SubjectsListViewProps {
+    subjects: Subject[];
     progress: Progress;
-    onSelectTopic: (index: number) => void;
-    onAddNewTopic: (title: string) => Promise<void>;
+    onSelectSubject: (index: number) => void;
+    onAddNewSubject: (title: string) => Promise<void>;
     onResetProgress: () => void;
-    onDeleteTopic: (index: number) => void;
+    onDeleteSubject: (index: number) => void;
     onNavigateToResearch: () => void;
 }
 
@@ -42,7 +43,6 @@ const WelcomeMessage: React.FC = () => {
                     <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
                 </svg>
             </button>
-            {/* FIX: Corrected typo from hh2 to h2 */}
             <h2 className="text-xl font-bold text-secondary mb-2">{t('welcome_title')}</h2>
             <p className="text-text-secondary">{t('welcome_message')}</p>
         </div>
@@ -61,32 +61,32 @@ const TrashIcon: React.FC = () => (
     </svg>
 );
 
-const TopicsListView: React.FC<TopicsListViewProps> = ({ topics, progress, onSelectTopic, onAddNewTopic, onResetProgress, onDeleteTopic, onNavigateToResearch }) => {
-    const [newTopicTitle, setNewTopicTitle] = useState('');
+const SubjectsListView: React.FC<SubjectsListViewProps> = ({ subjects, progress, onSelectSubject, onAddNewSubject, onResetProgress, onDeleteSubject, onNavigateToResearch }) => {
+    const [newSubjectTitle, setNewSubjectTitle] = useState('');
     const [isAdding, setIsAdding] = useState(false);
     const [error, setError] = useState('');
     const { t } = useTranslation();
 
-    const getChapterKey = (path: ChapterPath) => `${path.topicIdx}-${path.subtopicIdx}-${path.chapterIdx}`;
+    const getChapterKey = (path: ChapterPath) => `${path.subjectIdx}-${path.subtopicIdx}-${path.chapterIdx}`;
     const isChapterComplete = (path: ChapterPath) => !!progress[getChapterKey(path)];
     
-    const isTopicComplete = (topic: Topic, topicIdx: number) => {
-        return topic.subtopics.every((subtopic, subtopicIdx) => 
-            subtopic.chapters.every((_, chapterIdx) => isChapterComplete({ topicIdx, subtopicIdx, chapterIdx }))
+    const isSubjectComplete = (subject: Subject, subjectIdx: number) => {
+        return subject.subtopics.every((subtopic, subtopicIdx) => 
+            subtopic.chapters.every((_, chapterIdx) => isChapterComplete({ subjectIdx, subtopicIdx, chapterIdx }))
         );
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!newTopicTitle.trim()) return;
+        if (!newSubjectTitle.trim()) return;
         
         setIsAdding(true);
         setError('');
         try {
-            await onAddNewTopic(newTopicTitle);
-            setNewTopicTitle('');
+            await onAddNewSubject(newSubjectTitle);
+            setNewSubjectTitle('');
         } catch (err: any) {
-            setError(err.message || t('add_topic_error'));
+            setError(err.message || t('add_subject_error'));
             console.error(err);
         } finally {
             setIsAdding(false);
@@ -97,23 +97,23 @@ const TopicsListView: React.FC<TopicsListViewProps> = ({ topics, progress, onSel
         <div className="space-y-8 animate-fade-in">
             <WelcomeMessage />
             <div className="bg-surface p-6 rounded-lg shadow-lg">
-                <h2 className="text-2xl font-bold text-secondary mb-4">{t('add_new_topic')}</h2>
+                <h2 className="text-2xl font-bold text-secondary mb-4">{t('add_new_subject')}</h2>
                 <form onSubmit={handleSubmit} className="space-y-4">
-                    <p className="text-text-secondary">{t('add_topic_description')}</p>
+                    <p className="text-text-secondary">{t('add_subject_description')}</p>
                     <input 
                         type="text" 
-                        value={newTopicTitle}
-                        onChange={(e) => setNewTopicTitle(e.target.value)}
-                        placeholder={t('add_topic_placeholder')}
+                        value={newSubjectTitle}
+                        onChange={(e) => setNewSubjectTitle(e.target.value)}
+                        placeholder={t('add_subject_placeholder')}
                         className="w-full bg-background p-3 rounded-lg border border-gray-600 focus:outline-none focus:ring-2 focus:ring-primary"
                         disabled={isAdding}
                     />
                     <button 
                         type="submit" 
-                        disabled={isAdding || !newTopicTitle.trim()}
+                        disabled={isAdding || !newSubjectTitle.trim()}
                         className="w-full bg-primary hover:bg-indigo-500 text-white font-bold py-3 px-4 rounded-lg transition-colors duration-200 disabled:bg-gray-500 disabled:cursor-not-allowed flex justify-center items-center"
                     >
-                        {isAdding ? <LoadingSpinner /> : t('generate_and_add_topic')}
+                        {isAdding ? <LoadingSpinner /> : t('generate_and_add_subject')}
                     </button>
                     {error && <p className="text-red-400 text-sm mt-2">{error}</p>}
                 </form>
@@ -121,7 +121,7 @@ const TopicsListView: React.FC<TopicsListViewProps> = ({ topics, progress, onSel
 
             <div className="space-y-4">
                 <div className="flex justify-between items-center">
-                    <h2 className="text-3xl font-bold">{t('available_topics')}</h2>
+                    <h2 className="text-3xl font-bold">{t('available_subjects')}</h2>
                     <button 
                         onClick={onResetProgress}
                         className="text-sm text-text-secondary hover:text-red-400 transition-colors"
@@ -143,28 +143,28 @@ const TopicsListView: React.FC<TopicsListViewProps> = ({ topics, progress, onSel
                     </svg>
                 </div>
 
-                {topics.map((topic, index) => (
+                {subjects.map((subject, index) => (
                     <div 
-                        key={`${topic.title}-${index}`} 
+                        key={`${subject.title}-${index}`} 
                         className="bg-surface rounded-lg shadow-lg hover:bg-gray-700/50 transition-colors duration-200 flex items-center group"
                     >
                         <button 
-                            onClick={() => onSelectTopic(index)}
+                            onClick={() => onSelectSubject(index)}
                             className="flex-grow text-left p-6 flex items-center gap-4"
                         >
-                            <span className="text-xl font-semibold text-text-primary">{topic.title}</span>
+                            <span className="text-xl font-semibold text-text-primary">{subject.title}</span>
                         </button>
                         <div className="flex-shrink-0 flex items-center gap-2 pr-4">
-                             {isTopicComplete(topic, index) && <CheckmarkIcon />}
+                             {isSubjectComplete(subject, index) && <CheckmarkIcon />}
                             <button
                                 onClick={(e) => {
-                                    e.stopPropagation(); // Prevent topic selection
-                                    if (window.confirm(t('delete_topic_confirm', { topicTitle: topic.title }))) {
-                                        onDeleteTopic(index);
+                                    e.stopPropagation(); // Prevent subject selection
+                                    if (window.confirm(t('delete_subject_confirm', { subjectTitle: subject.title }))) {
+                                        onDeleteSubject(index);
                                     }
                                 }}
                                 className="text-gray-500 hover:text-red-400 p-2 rounded-full transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
-                                aria-label={t('delete_topic_label', { topicTitle: topic.title })}
+                                aria-label={t('delete_subject_label', { subjectTitle: subject.title })}
                             >
                                 <TrashIcon />
                             </button>
@@ -176,4 +176,4 @@ const TopicsListView: React.FC<TopicsListViewProps> = ({ topics, progress, onSel
     );
 };
 
-export default TopicsListView;
+export default SubjectsListView;

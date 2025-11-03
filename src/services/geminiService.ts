@@ -1,5 +1,5 @@
-// FIX: Import VideoOperation type.
-import type { QuizQuestion, Subtopic, GroundedSearchResponse, VideoOperation, VisualConceptResponse } from '../types';
+
+import type { QuizQuestion, Subtopic, GroundedSearchResponse, VisualConceptResponse, VideoOperation } from '../types';
 
 const API_ENDPOINT = '/.netlify/functions/gemini';
 
@@ -51,13 +51,12 @@ export const geminiService = {
     return result.text;
   },
 
-  startChat: (isThinkingMode: boolean) => {
+  startChat: () => {
     return {
       sendMessage: async (history: any[], message: string, language: 'en' | 'bn') => {
         const result = await callApi<{ text: string }>('sendMessage', { 
             history, 
-            message, 
-            isThinkingMode,
+            message,
             language
         });
         return result;
@@ -74,9 +73,9 @@ export const geminiService = {
      }
   },
 
-  generateTopicStructure: async (topicTitle: string): Promise<Subtopic[]> => {
+  generateSubjectStructure: async (subjectTitle: string): Promise<Subtopic[]> => {
     try {
-        const result = await callApi<Subtopic[]>('generateTopicStructure', { topicTitle });
+        const result = await callApi<Subtopic[]>('generateSubjectStructure', { subjectTitle });
         return result;
     } catch(error) {
         // Propagate the error to be handled by the UI
@@ -104,10 +103,11 @@ export const geminiService = {
     return callApi<VisualConceptResponse>('generateVisualConcept', { chapterTitle, chapterContent });
   },
 
+  // FIX: Add methods for video generation
   generateVideo: async (
     prompt: string,
     image: { data: string; mimeType: string } | null,
-    config: { resolution: string; aspectRatio: string; numberOfVideos: number }
+    config: { resolution: '720p' | '1080p'; aspectRatio: '16:9' | '9:16'; numberOfVideos: number }
   ): Promise<VideoOperation> => {
     return callApi<VideoOperation>('generateVideo', { prompt, image, config });
   },
@@ -121,7 +121,3 @@ export const geminiService = {
     return null;
   },
 };
-
-// These helpers are no longer needed on the frontend as audio processing is disabled.
-export function encode(bytes: Uint8Array): string { return ''; }
-export function createPcmBlob(data: Float32Array) { return null; }

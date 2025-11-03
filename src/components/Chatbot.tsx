@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import type { ChatMessage } from '../types';
 import { geminiService } from '../services/geminiService';
@@ -9,7 +10,6 @@ const Chatbot: React.FC = () => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [isThinkingMode, setIsThinkingMode] = useState(false);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { language, t } = useTranslation();
@@ -36,7 +36,7 @@ const Chatbot: React.FC = () => {
             parts: [{ text: msg.text }]
         }));
         
-        const chatProxy = geminiService.startChat(isThinkingMode);
+        const chatProxy = geminiService.startChat();
         const response = await chatProxy.sendMessage(chatHistory, input, language);
 
         const modelMessage: ChatMessage = { role: 'model', text: response.text };
@@ -69,13 +69,6 @@ const Chatbot: React.FC = () => {
         <div className="fixed bottom-24 right-5 w-full max-w-md h-[70vh] max-h-[600px] bg-surface rounded-lg shadow-2xl flex flex-col z-40 animate-fade-in-up">
           <header className="p-4 border-b border-gray-700 flex justify-between items-center">
             <h2 className="text-xl font-bold">{t('ai_assistant')}</h2>
-            <div className="flex items-center space-x-2">
-                <span className={`text-sm ${isThinkingMode ? 'text-secondary' : 'text-text-secondary'}`}>{t('thinking_mode')}</span>
-                <label className="relative inline-flex items-center cursor-pointer">
-                    <input type="checkbox" checked={isThinkingMode} onChange={() => setIsThinkingMode(!isThinkingMode)} className="sr-only peer" />
-                    <div className="w-11 h-6 bg-gray-600 rounded-full peer peer-focus:ring-4 peer-focus:ring-primary/50 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
-                </label>
-            </div>
           </header>
 
           <div className="flex-1 p-4 overflow-y-auto space-y-4">

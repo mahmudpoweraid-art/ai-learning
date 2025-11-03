@@ -1,3 +1,4 @@
+
 export interface Chapter {
   title: string;
 }
@@ -7,13 +8,13 @@ export interface Subtopic {
   chapters: Chapter[];
 }
 
-export interface Topic {
+export interface Subject {
   title: string;
   subtopics: Subtopic[];
 }
 
 export interface ChapterPath {
-  topicIdx: number;
+  subjectIdx: number;
   subtopicIdx: number;
   chapterIdx: number;
 }
@@ -34,7 +35,7 @@ export interface QuizQuestion {
 
 export interface SearchResult {
     path: ChapterPath;
-    topicTitle: string;
+    subjectTitle: string;
     subtopicTitle: string;
     chapterTitle: string;
 }
@@ -58,16 +59,14 @@ export interface VisualConceptResponse {
     imageData: string;
 }
 
-
-// FIX: Add types for video generation to resolve missing type errors.
-// Video Generation Types
-export interface Video {
+// FIX: Add types for video generation
+export interface VideoDetails {
     uri: string;
     aspectRatio?: '16:9' | '9:16';
 }
 
 export interface GeneratedVideo {
-    video: Video;
+    video: VideoDetails;
 }
 
 export interface VideoGenerationResponse {
@@ -75,7 +74,8 @@ export interface VideoGenerationResponse {
 }
 
 export interface VideoOperation {
-    name: string;
     done: boolean;
     response?: VideoGenerationResponse;
+    name?: string;
+    metadata?: any;
 }

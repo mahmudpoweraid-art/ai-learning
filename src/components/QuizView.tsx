@@ -1,6 +1,7 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { geminiService } from '../services/geminiService';
-import type { ChapterPath, QuizQuestion, Topic } from '../types';
+import type { ChapterPath, QuizQuestion, Subject } from '../types';
 import LoadingSpinner from './LoadingSpinner';
 import { useTranslation } from '../i18n';
 
@@ -8,7 +9,7 @@ interface QuizViewProps {
   path: ChapterPath;
   onQuizComplete: () => void;
   chapterContent: string;
-  courseStructure: Topic[];
+  courseStructure: Subject[];
 }
 
 const QuizView: React.FC<QuizViewProps> = ({ path, onQuizComplete, chapterContent, courseStructure }) => {
@@ -23,7 +24,7 @@ const QuizView: React.FC<QuizViewProps> = ({ path, onQuizComplete, chapterConten
   const [showExplanation, setShowExplanation] = useState(false);
   
   const { language, t } = useTranslation();
-  const chapter = courseStructure[path.topicIdx].subtopics[path.subtopicIdx].chapters[path.chapterIdx];
+  const chapter = courseStructure[path.subjectIdx].subtopics[path.subtopicIdx].chapters[path.chapterIdx];
   
   const isQuizFinished = currentQuestionIndex >= questions.length;
   const displayQuestions = language === 'bn' ? translatedQuestions : questions;

@@ -1,8 +1,9 @@
+
 import React, { useState, useEffect, lazy, Suspense } from 'react';
 import SearchBar from './components/SearchBar';
 import Chatbot from './components/Chatbot';
 import AudioTranscriber from './components/AudioTranscriber';
-import type { ChapterPath, Progress, Topic } from './types';
+import type { ChapterPath, Progress, Subject } from './types';
 import { COURSE_STRUCTURE } from './constants';
 import { geminiService } from './services/geminiService';
 import { LanguageProvider, useTranslation } from './i18n';
@@ -14,10 +15,10 @@ const ChapterView = lazy(() => import('./components/ChapterView'));
 const QuizView = lazy(() => import('./components/QuizView'));
 const ResearchView = lazy(() => import('./components/ResearchView'));
 
-type View = 'topics' | 'topicDetail' | 'chapter' | 'quiz' | 'research';
+type View = 'subjects' | 'subjectDetail' | 'chapter' | 'quiz' | 'research';
 
 const AppContent: React.FC = () => {
-  const [courseStructure, setCourseStructure] = useState<Topic[]>(() => {
+  const [courseStructure, setCourseStructure] = useState<Subject[]>(() => {
     try {
         const savedStructure = localStorage.getItem('courseStructure');
         return savedStructure ? JSON.parse(savedStructure) : COURSE_STRUCTURE;
@@ -26,8 +27,8 @@ const AppContent: React.FC = () => {
         return COURSE_STRUCTURE;
     }
   });
-  const [currentView, setCurrentView] = useState<View>('topics');
-  const [selectedTopicIdx, setSelectedTopicIdx] = useState<number | null>(null);
+  const [currentView, setCurrentView] = useState<View>('subjects');
+  const [selectedSubjectIdx, setSelectedSubjectIdx] = useState<number | null>(null);
   const [currentPath, setCurrentPath] = useState<ChapterPath | null>(null);
   const [quizState, setQuizState] = useState<{path: ChapterPath, content: string} | null>(null);
   
@@ -51,27 +52,27 @@ const AppContent: React.FC = () => {
     localStorage.setItem('courseStructure', JSON.stringify(courseStructure));
   }, [courseStructure]);
 
-  const handleAddNewTopic = async (topicTitle: string) => {
-    const subtopics = await geminiService.generateTopicStructure(topicTitle);
+  const handleAddNewSubject = async (subjectTitle: string) => {
+    const subtopics = await geminiService.generateSubjectStructure(subjectTitle);
     if (subtopics && subtopics.length > 0) {
-      const newTopic: Topic = { title: topicTitle, subtopics };
-      setCourseStructure(prev => [...prev, newTopic]);
+      const newSubject: Subject = { title: subjectTitle, subtopics };
+      setCourseStructure(prev => [...prev, newSubject]);
     } else {
-      throw new Error("Could not generate topic structure.");
+      throw new Error("Could not generate subject structure.");
     }
   };
 
-  const handleDeleteTopic = (topicIdxToDelete: number) => {
-    setCourseStructure(prevStructure => prevStructure.filter((_, index) => index !== topicIdxToDelete));
-    if (selectedTopicIdx === topicIdxToDelete) {
-        setSelectedTopicIdx(null);
-        setCurrentView('topics');
-    } else if (selectedTopicIdx && selectedTopicIdx > topicIdxToDelete) {
-        setSelectedTopicIdx(prev => prev! - 1);
+  const handleDeleteSubject = (subjectIdxToDelete: number) => {
+    setCourseStructure(prevStructure => prevStructure.filter((_, index) => index !== subjectIdxToDelete));
+    if (selectedSubjectIdx === subjectIdxToDelete) {
+        setSelectedSubjectIdx(null);
+        setCurrentView('subjects');
+    } else if (selectedSubjectIdx && selectedSubjectIdx > subjectIdxToDelete) {
+        setSelectedSubjectIdx(prev => prev! - 1);
     }
   };
 
-  const getChapterKey = (path: ChapterPath) => `${path.topicIdx}-${path.subtopicIdx}-${path.chapterIdx}`;
+  const getChapterKey = (path: ChapterPath) => `${path.subjectIdx}-${path.subtopicIdx}-${path.chapterIdx}`;
 
   const markChapterAsComplete = (path: ChapterPath) => {
     const key = getChapterKey(path);
@@ -85,9 +86,9 @@ const AppContent: React.FC = () => {
     }
   };
 
-  const handleSelectTopic = (idx: number) => {
-      setSelectedTopicIdx(idx);
-      setCurrentView('topicDetail');
+  const handleSelectSubject = (idx: number) => {
+      setSelectedSubjectIdx(idx);
+      setCurrentView('subjectDetail');
   };
 
   const handleSelectChapter = (path: ChapterPath) => {
@@ -111,17 +112,17 @@ const AppContent: React.FC = () => {
   const handleNavigate = (direction: 'next' | 'prev') => {
     if (!currentPath) return;
 
-    let { topicIdx, subtopicIdx, chapterIdx } = currentPath;
-    const currentSubtopic = courseStructure[topicIdx].subtopics[subtopicIdx];
+    let { subjectIdx, subtopicIdx, chapterIdx } = currentPath;
+    const currentSubtopic = courseStructure[subjectIdx].subtopics[subtopicIdx];
 
     if (direction === 'next') {
       if (chapterIdx < currentSubtopic.chapters.length - 1) {
         chapterIdx++;
-      } else if (subtopicIdx < courseStructure[topicIdx].subtopics.length - 1) {
+      } else if (subtopicIdx < courseStructure[subjectIdx].subtopics.length - 1) {
         subtopicIdx++;
         chapterIdx = 0;
-      } else if (topicIdx < courseStructure.length - 1) {
-        topicIdx++;
+      } else if (subjectIdx < courseStructure.length - 1) {
+        subjectIdx++;
         subtopicIdx = 0;
         chapterIdx = 0;
       } else {
@@ -132,24 +133,24 @@ const AppContent: React.FC = () => {
         chapterIdx--;
       } else if (subtopicIdx > 0) {
         subtopicIdx--;
-        chapterIdx = courseStructure[topicIdx].subtopics[subtopicIdx].chapters.length - 1;
-      } else if (topicIdx > 0) {
-        topicIdx--;
-        subtopicIdx = courseStructure[topicIdx].subtopics.length - 1;
-        chapterIdx = courseStructure[topicIdx].subtopics[subtopicIdx].chapters.length - 1;
+        chapterIdx = courseStructure[subjectIdx].subtopics[subtopicIdx].chapters.length - 1;
+      } else if (subjectIdx > 0) {
+        subjectIdx--;
+        subtopicIdx = courseStructure[subjectIdx].subtopics.length - 1;
+        chapterIdx = courseStructure[subjectIdx].subtopics[subtopicIdx].chapters.length - 1;
       } else {
         return;
       }
     }
-    setCurrentPath({ topicIdx, subtopicIdx, chapterIdx });
+    setCurrentPath({ subjectIdx, subtopicIdx, chapterIdx });
   };
   
-  const handleBackToTopicDetail = () => {
+  const handleBackToSubjectDetail = () => {
     if (currentPath) {
         markChapterAsComplete(currentPath);
     }
     setCurrentPath(null);
-    setCurrentView('topicDetail');
+    setCurrentView('subjectDetail');
   };
   
   const renderContent = () => {
@@ -168,31 +169,31 @@ const AppContent: React.FC = () => {
                   path={currentPath}
                   courseStructure={courseStructure}
                   onNavigate={handleNavigate}
-                  onBackToTopicDetail={handleBackToTopicDetail}
+                  onBackToSubjectDetail={handleBackToSubjectDetail}
                   onStartQuiz={handleStartQuiz}
                   markChapterAsComplete={markChapterAsComplete}
                 />;
-        case 'topicDetail':
-            if (selectedTopicIdx === null) return null;
+        case 'subjectDetail':
+            if (selectedSubjectIdx === null) return null;
             return <TopicIndex 
-                topic={courseStructure[selectedTopicIdx]}
-                topicIdx={selectedTopicIdx}
+                subject={courseStructure[selectedSubjectIdx]}
+                subjectIdx={selectedSubjectIdx}
                 onSelectChapter={handleSelectChapter}
                 progress={progress}
-                onBackToTopics={() => setCurrentView('topics')}
+                onBackToSubjects={() => setCurrentView('subjects')}
                 courseStructure={courseStructure}
-            />
+            />;
         case 'research':
-            return <ResearchView onBack={() => setCurrentView('topics')} />;
-        case 'topics':
+            return <ResearchView onBack={() => setCurrentView('subjects')} />;
+        case 'subjects':
         default:
             return <TopicsListView 
-                topics={courseStructure}
+                subjects={courseStructure}
                 progress={progress}
-                onSelectTopic={handleSelectTopic}
-                onAddNewTopic={handleAddNewTopic}
+                onSelectSubject={handleSelectSubject}
+                onAddNewSubject={handleAddNewSubject}
                 onResetProgress={handleResetProgress}
-                onDeleteTopic={handleDeleteTopic}
+                onDeleteSubject={handleDeleteSubject}
                 onNavigateToResearch={() => setCurrentView('research')}
             />;
     }

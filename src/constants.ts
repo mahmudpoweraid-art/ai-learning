@@ -1,6 +1,7 @@
-import type { Topic } from './types';
 
-export const COURSE_STRUCTURE: Topic[] = [
+import type { Subject } from './types';
+
+export const COURSE_STRUCTURE: Subject[] = [
   {
     title: 'Google AI Studio',
     subtopics: [

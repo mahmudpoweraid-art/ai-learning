@@ -1,10 +1,11 @@
+
 import React, { useState, useMemo, useRef, useEffect } from 'react';
-import type { ChapterPath, SearchResult, Topic } from '../types';
+import type { ChapterPath, SearchResult, Subject } from '../types';
 import { useTranslation } from '../i18n';
 
 interface SearchBarProps {
   onSelectChapter: (path: ChapterPath) => void;
-  courseStructure: Topic[];
+  courseStructure: Subject[];
 }
 
 const SearchBar: React.FC<SearchBarProps> = ({ onSelectChapter, courseStructure }) => {
@@ -16,12 +17,12 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSelectChapter, courseStructure 
 
   const allChapters = useMemo(() => {
     const chapters: SearchResult[] = [];
-    courseStructure.forEach((topic, topicIdx) => {
-      topic.subtopics.forEach((subtopic, subtopicIdx) => {
+    courseStructure.forEach((subject, subjectIdx) => {
+      subject.subtopics.forEach((subtopic, subtopicIdx) => {
         subtopic.chapters.forEach((chapter, chapterIdx) => {
           chapters.push({
-            path: { topicIdx, subtopicIdx, chapterIdx },
-            topicTitle: topic.title,
+            path: { subjectIdx, subtopicIdx, chapterIdx },
+            subjectTitle: subject.title,
             subtopicTitle: subtopic.title,
             chapterTitle: chapter.title,
           });
@@ -38,7 +39,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSelectChapter, courseStructure 
         (chapter) =>
           chapter.chapterTitle.toLowerCase().includes(lowerCaseQuery) ||
           chapter.subtopicTitle.toLowerCase().includes(lowerCaseQuery) ||
-          chapter.topicTitle.toLowerCase().includes(lowerCaseQuery)
+          chapter.subjectTitle.toLowerCase().includes(lowerCaseQuery)
       );
       setResults(filteredResults);
       setIsOpen(filteredResults.length > 0);
@@ -85,14 +86,14 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSelectChapter, courseStructure 
       </div>
       {isOpen && (
         <ul className="absolute z-10 mt-2 w-full bg-surface border border-gray-600 rounded-lg shadow-xl max-h-80 overflow-y-auto">
-          {results.map(({ path, topicTitle, subtopicTitle, chapterTitle }) => (
-            <li key={`${path.topicIdx}-${path.subtopicIdx}-${path.chapterIdx}`}>
+          {results.map(({ path, subjectTitle, subtopicTitle, chapterTitle }) => (
+            <li key={`${path.subjectIdx}-${path.subtopicIdx}-${path.chapterIdx}`}>
               <button
                 onClick={() => handleSelect(path)}
                 className="w-full text-left px-4 py-3 hover:bg-gray-700/50 transition-colors"
               >
                 <p className="font-semibold text-text-primary">{chapterTitle}</p>
-                <p className="text-sm text-text-secondary">{topicTitle} {'>'} {subtopicTitle}</p>
+                <p className="text-sm text-text-secondary">{subjectTitle} > {subtopicTitle}</p>
               </button>
             </li>
           ))}

@@ -1,3 +1,4 @@
+
 import React from 'react';
 
 // The AudioTranscriber feature is disabled in the production version because
